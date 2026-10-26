@@ -306,7 +306,7 @@ TestTsconfigExtendsWithImportsFailure/invalid
 console.log(/* @__PURE__ */ fallback("div", null));
 
 ================================================================================
-TestTsconfigExtendsWithImportsFailure/invalid-type
+TestTsconfigExtendsWithImportsFailure/invalid-segment
 ---------- /out/main.js ----------
 // project/main.tsx
 console.log(/* @__PURE__ */ fallback("div", null));

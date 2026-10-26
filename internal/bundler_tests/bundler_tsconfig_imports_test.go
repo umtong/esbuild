@@ -95,8 +95,8 @@ func TestTsconfigExtendsWithImportsPatternAndArray(t *testing.T) {
 func TestTsconfigExtendsWithImportsNearestPackage(t *testing.T) {
 	tsconfig_suite.expectBundled(t, bundled{
 		files: map[string]string{
-			"/project/package.json": `{"imports": {"#base": "./bad.json"}}`,
-			"/project/bad.json":     `FAILURE`,
+			"/project/package.json":              `{"imports": {"#base": "./bad.json"}}`,
+			"/project/bad.json":                  `FAILURE`,
 			"/project/packages/app/src/main.tsx": `console.log(<div/>)`,
 			"/project/packages/app/config/custom.json": `{
 				"extends": "#base"
@@ -157,7 +157,7 @@ func TestTsconfigExtendsWithImportsPackageTarget(t *testing.T) {
 func TestTsconfigExtendsWithImportsYarnPnP(t *testing.T) {
 	tsconfig_suite.expectBundled(t, bundled{
 		files: map[string]string{
-			"/project/packages/app/src/main.tsx": `console.log(<div/>)`,
+			"/project/packages/app/src/main.tsx":      `console.log(<div/>)`,
 			"/project/packages/app/src/tsconfig.json": `{"extends": "#base"}`,
 			"/project/packages/app/package.json": `{
 				"imports": {"#base": "tsconfigs/base.json"}
@@ -227,16 +227,16 @@ func TestTsconfigExtendsWithImportsAcrossNodeModules(t *testing.T) {
 
 func TestTsconfigExtendsWithImportsFailure(t *testing.T) {
 	for name, packageJSON := range map[string]string{
-		"missing-map":   `{}`,
-		"missing-entry": `{"imports": {"#other": "./base.json"}}`,
-		"null":          `{"imports": {"#base": null}}`,
-		"missing-file":  `{"imports": {"#base": "./missing.json"}}`,
-		"invalid":       `{"imports": {"#base": "../base.json"}}`,
-		"invalid-type":  `{"imports": {"#base": 42}}`,
-		"absolute":      `{"imports": {"#base": "/base.json"}}`,
-		"empty":         `{"imports": {"#base": ""}}`,
-		"extensionless": `{"imports": {"#base": "./base"}}`,
-		"directory":     `{"imports": {"#base": "./directory.json"}}`,
+		"missing-map":     `{}`,
+		"missing-entry":   `{"imports": {"#other": "./base.json"}}`,
+		"null":            `{"imports": {"#base": null}}`,
+		"missing-file":    `{"imports": {"#base": "./missing.json"}}`,
+		"invalid":         `{"imports": {"#base": "../base.json"}}`,
+		"invalid-segment": `{"imports": {"#base": "./node_modules/base.json"}}`,
+		"absolute":        `{"imports": {"#base": "/base.json"}}`,
+		"empty":           `{"imports": {"#base": ""}}`,
+		"extensionless":   `{"imports": {"#base": "./base"}}`,
+		"directory":       `{"imports": {"#base": "./directory.json"}}`,
 		// Match normal package imports, which do not recursively remap aliases.
 		"alias":       `{"imports": {"#base": "#other", "#other": "./base.json"}}`,
 		"alias-cycle": `{"imports": {"#base": "#other", "#other": "#base"}}`,
@@ -244,15 +244,16 @@ func TestTsconfigExtendsWithImportsFailure(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			tsconfig_suite.expectBundled(t, bundled{
 				files: map[string]string{
-					"/package.json": `{"imports": {"#base": "./base.json"}}`,
-					"/base.json":    `FAILURE`,
+					"/package.json":     `{"imports": {"#base": "./base.json"}}`,
+					"/base.json":        `FAILURE`,
 					"/project/main.tsx": `console.log(<div/>)`,
 					"/project/tsconfig.json": `{
 						"extends": "#base",
 						"compilerOptions": {"jsxFactory": "fallback"}
 					}`,
-					"/project/package.json": packageJSON,
-					"/project/base.json":    `FAILURE`,
+					"/project/package.json":                 packageJSON,
+					"/project/base.json":                    `FAILURE`,
+					"/project/node_modules/base.json":       `FAILURE`,
 					"/project/directory.json/tsconfig.json": `FAILURE`,
 				},
 				entryPaths: []string{"/project/main.tsx"},
@@ -270,9 +271,9 @@ func TestTsconfigExtendsWithImportsFailure(t *testing.T) {
 func TestTsconfigExtendsWithImportsCycle(t *testing.T) {
 	tsconfig_suite.expectBundled(t, bundled{
 		files: map[string]string{
-			"/project/main.tsx": `console.log(<div/>)`,
+			"/project/main.tsx":      `console.log(<div/>)`,
 			"/project/tsconfig.json": `{"extends": "#base"}`,
-			"/project/package.json": `{"imports": {"#base": "./base.json"}}`,
+			"/project/package.json":  `{"imports": {"#base": "./base.json"}}`,
 			"/project/base.json": `{
 				"extends": "#base",
 				"compilerOptions": {"jsxFactory": "success"}
