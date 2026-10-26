@@ -61,10 +61,13 @@ jobs:
           const leaves = new Set(failures.filter(x => /\/(Unix|Windows)$/.test(x)));
           const unexpected = failures.filter(x => ![...expected].some(y => y === x || y.startsWith(x + '/')));
           const controls = new Set(events.filter(x => x.Action === 'pass' && /^TestTsconfigExtendsWithImportsFailure\/.*\/(Unix|Windows)$/.test(x.Test || '')).map(x => x.Test));
-          if (leaves.size !== expected.size || [...expected].some(x => !leaves.has(x)) || unexpected.length || controls.size !== 24 || /No test found for snapshot|No snapshot saved/.test(text)) {
+          const output = events.filter(e => e.Action === 'output').map(e => e.Output || '').join('');
+          const missing = [...output.matchAll(/No test found for snapshot ([^\r\n]+)/g)].map(m => m[1]);
+          const badMissing = missing.filter(name => !roots.includes(name));
+          if (leaves.size !== expected.size || [...expected].some(x => !leaves.has(x)) || unexpected.length || controls.size !== 24 || badMissing.length || output.includes('No snapshot saved')) {
             const relevant = events.filter(x => x.Action === 'output' && x.Test && x.Test.startsWith('TestTsconfigExtendsWithImports')).map(x => x.Output).join('');
             console.log(relevant || text.slice(-20000));
-            throw new Error(JSON.stringify({ expectedFailures: [...expected], actualFailures: [...leaves], unexpected, passingControls: controls.size }));
+            throw new Error(JSON.stringify({ expectedFailures: [...expected], actualFailures: [...leaves], unexpected, passingControls: controls.size, unexpectedMissingSnapshots: badMissing }));
           }
           console.log('Baseline: ' + leaves.size + ' expected failing platform cases; ' + controls.size + ' passing rejection controls.');
           for (const name of [...leaves].sort()) console.log('EXPECTED FAILURE: ' + name);
